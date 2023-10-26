@@ -1,0 +1,185 @@
+/******************************************************************************************************************************************************************
+
+Roll no.:EE23B049
+Name: Nishanth Senthil Kumar
+Date: 15 October 2023
+Version: 1
+Description: To generate a normal distribution with noise, make a curve using the lorentizian curve,add noise to it, to find the average width,time 
+and standard deviation. Here we are using real time data
+Input: M(number of peaks) is argv[1], T(time period) is argv[2], a is argv[3],type 'l' for argv[4] for Lorentzian or 'g' for gaussian.
+Output: average time period <space> average width <space> stdev time period <space> stdev a (in order)
+Note : The graph is meaningful only is m is between 1 and 5000 and if T/a ratio is between 5 and 100, the code will also not run for a<0.5 as i have
+used a time increment value of 0.1 and hence if a is tending to 0.1, all the graphs will overlap and the answer generated 
+will be1 meaningless.
+
+********************************************************************************************************************************************************************/
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <time.h>
+#define a 0.62 //defining the value of a that will be used in the exponential filter
+
+typedef  struct vx {
+  double location;
+  double width; 
+}curve;
+
+int main(int argc, char *argv[])
+{
+    time_t t;
+    srand((unsigned int) time(NULL));
+    int m=atoi(argv[1]);
+    double T=atof(argv[2]);
+    double amp=atof(argv[3]);
+    char type=*argv[4]; 
+    double buff=0;  
+    FILE *fptr=fopen("input.txt","w");
+    double eps1,eps2,eps3,random; 
+    curve cx[100000];//declaring the structure 
+    double *storage=malloc(100000000*(__SIZEOF_LONG_LONG__));
+    double threshold=0.5; //threshold is defined as 0.5
+    double increment;
+    int count=0;
+    //these are values which are most optimum after rigourous testing
+    if(type=='l'){
+    if(m>500){
+      increment=0.25;
+    }
+    else if(amp<1){
+      increment=T/20;
+      
+    }
+    else{
+      increment=0.1;
+    }
+     for(int j=1;j<=m;j++)
+
+    {    for(double t=((j*T)-(T/2)); t< ((j*T)+(T/2)); t=t+(increment))
+
+        {
+          random=((double) rand() / (double)(RAND_MAX));
+          eps1=(sqrt(-2*log(random)))*cos(2*M_PI*random);//boxmuller transformation
+          eps2=(sqrt(-2*log(random)))*sin(2*M_PI*random);
+          eps3=(eps1+eps2)/2;  
+          buff=(pow(amp+(eps1*0.05),2))/(pow(t+(eps2*0.05)-(j*T),2)+pow(amp,2))+(eps3*0.05);  //lorentizian curve
+          storage[count]=buff;
+          count++;//number of elements in the datas
+          fprintf(fptr,"%f %f\n",t,buff);
+       }
+    }
+    }
+
+    else if(type=='g'){ 
+        
+    if(m>500){
+      increment=0.5;
+    }
+    else if(amp<1){
+      increment=T/20;
+      
+    }
+    else{
+      increment=0.25;
+    }
+     for(int j=1;j<=m;j++)
+
+    {    for(double t=((j*T)-(T/2)); t< ((j*T)+(T/2)); t=t+(increment))
+
+        {
+          random=((double) rand() / (double)(RAND_MAX));
+          eps1=(sqrt(-2*log(random)))*cos(2*M_PI*random);//boxmuller transformation
+          eps2=(sqrt(-2*log(random)))*sin(2*M_PI*random);
+          eps3=(eps1+eps2)/2;  
+            buff=1*(exp((-1*((pow(t-j*T+(0.5*eps1),2))))/(2*(pow(amp+0.5*eps2,2))))); //gaussian curve
+            storage[count]=buff;
+            count++;//number of elements in the datas
+            fprintf(fptr,"%f %f\n",t,buff);
+
+       }
+    }
+    }
+    else {
+        printf("Please enter 'l' for Lorentzian or 'g' for gaussian.\n");
+        return 0;
+    }
+    fclose(fptr);
+
+
+/*********************************************************************************************************************************************/ 
+   //This is the second part of the code which is using the data generated in thr first part of the code as a live data set
+
+    FILE *fptr2=fopen("input.txt","r");
+    float buff1=0;
+    float buff2=0;
+    float t1=0;
+    float t2=0;
+    //FILE *fptr3=fopen("newgraph.txt","w");
+    fscanf(fptr2,"%f %f",&buff1,&buff2);
+   // fprintf(fptr3,"%f %f\n",buff1,buff2);
+    float functiontemp=buff2;
+    float timetemp=buff1;
+    float temp2=0;
+    int peaks=0;
+    float q=0;
+    int counter=0;
+    while(fscanf(fptr2,"%f %f",&buff1,&buff2)!=-1){
+    temp2=buff2;
+    functiontemp=(0.68*functiontemp+ 0.32*buff2);
+    //fprintf(fptr3,"%f %f\n",buff1,functiontemp);
+    //the variable q is used to make sure that only one value is taken from each loop while still iteration through it
+    
+    if(functiontemp<0.35&& q==0){
+      continue;
+    }
+
+     if(functiontemp<0.35 && q==1){
+        q=0;
+        cx[counter].location=(t1+t2)/2; //finding the values of locations of the midpoints of each peak
+        if(type=='l'){ 
+        cx[counter].width=fabs((t1-t2)/2); //finding the values of width
+        }
+        if(type=='g'){
+          cx[counter].width=fabs((t1-t2)/(2*1.177)); //for gaussian we will have to divide by 2*rt(ln4)
+        }
+        counter++; //counter to verify the number of peaks that are present ib=n the system
+ 
+      }
+
+    if(functiontemp>=threshold && q==0){
+        t1=buff1; //value when the threshold line first intersects a curve
+        q++;
+    }
+
+    if(functiontemp<=threshold){
+      {
+        t2=buff1;  //value when the threshold line intersects a curve at the end
+      }
+    }
+
+    }
+    float sumwidth=0;
+    float sumtime=0;
+    float sumsqwidth=0;
+    float sumsqtime=0;
+  
+   for(int i=0;i<counter;i++){
+    sumwidth=sumwidth+cx[i].width;
+    sumsqwidth=sumsqwidth+pow(cx[i].width,2);
+    if(i<counter-1){
+    sumtime=sumtime+(cx[i+1].location-cx[i].location); //finding the sum of all the values
+    sumsqtime=sumsqtime+pow(cx[i+1].location-cx[i].location,2); //finding the sum of squares of all the values
+    }
+   }
+
+   float meantime=sumtime/(counter-1); //finding the mean time
+   float meanwidth=sumwidth/counter; //finding the mean width
+   float stdtime=sqrt((sumsqtime/(counter-1)) - pow(meantime,2));
+   float stdwidth=sqrt((sumsqwidth/counter) - pow(meanwidth,2));
+   printf("%f %f %f %f",meantime,meanwidth,stdtime,stdwidth); //printing the final answer
+   //fclose(fptr3);
+   //closing the files
+   fclose(fptr2);
+   return 0;
+   
+}
