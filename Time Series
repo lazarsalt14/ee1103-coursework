@@ -1,0 +1,311 @@
+/*
+Roll no.:EE23B049
+Name: Nishanth Senthil Kumar
+Date: 4 October 2023
+Version: 1
+Description: To generate a normal distribution with noise, make a curve using the lorentizian curve,add noise to it, to find the average width,time 
+and standard deviation.
+Input: M(number of peaks) is argv[1], T(time period) is argv[2], a is argv[3],type 'l' for argv[4] for Lorentzian or 'g' for gaussian.
+Output: average time period <space> average width <space> stdev time period <space> stdev a (in order)
+Note : The graph is meaningful only is m is between 1 and 5000 and if T/a ratio is between 5 and 100, the code will also not run for a<0.5 as i have
+used a time increment value of 0.1 and hence if a is tending to 0.1, all the graphs will overlap and the answer generated 
+will be meaningless.
+*/
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <time.h>
+
+typedef  struct vx {
+  double location;
+  double amplitude;
+  double width;
+
+  
+}curve;
+
+int main(int argc, char *argv[])
+{
+    time_t t;
+    srand((unsigned int) time(NULL));
+    int m=atoi(argv[1]);
+    double T=atof(argv[2]);
+    double amp=atof(argv[3]);
+    char type=*argv[4]; 
+    double buff=0;  
+    FILE *fptr=fopen("ng.txt","w");
+    FILE *fptr2=fopen("nsg.txt","w");
+    double eps1,eps2,eps3,random; 
+    double mean=0; 
+    double meansq=0; 
+    int count=0; 
+    double temp=0;
+    double greatest=0;
+    double smallest=100000000;
+    double difference1=0;
+    double difference2=0;
+    double buff2=0;
+    curve cx[m];//declaring the structure 
+    double *storage=malloc(100000000*(__SIZEOF_LONG_LONG__));
+
+    double increment;
+    
+    if(type=='l'){
+    if(m>500){
+      increment=0.25;
+    }
+    else if(amp<1){
+      increment=T/20;
+      
+    }
+    else{
+      increment=0.1;
+    }
+     for(int j=1;j<=m;j++)
+
+    {    for(double t=((j*T)-(T/2)); t< ((j*T)+(T/2)); t=t+(increment))
+
+        {
+          random=((double) rand() / (double)(RAND_MAX));
+          eps1=(sqrt(-2*log(random)))*cos(2*M_PI*random);//boxmuller transformation
+          eps2=(sqrt(-2*log(random)))*sin(2*M_PI*random);
+          eps3=(eps1+eps2)/2;  
+            buff=(pow(amp+(eps1*0.05),2))/(pow(t+(eps2*0.05)-(j*T),2)+pow(amp,2))+(eps3*0.05);
+            storage[count]=buff;
+            count++;//number of elements in the datas
+            
+            if(buff>=greatest){
+                greatest=buff;//finding the greatest in the dataset
+            }
+
+            if(buff<smallest){
+                smallest=buff;//finding the lowest in the dataset
+            }
+
+       }
+    }
+    }
+
+    else if(type=='g'){ 
+        
+    if(m>500){
+      increment=0.5;
+    }
+    else if(amp<1){
+      increment=T/20;
+      
+    }
+    else{
+      increment=0.25;
+    }
+     for(int j=1;j<=m;j++)
+
+    {    for(double t=((j*T)-(T/2)); t< ((j*T)+(T/2)); t=t+(increment))
+
+        {
+          random=((double) rand() / (double)(RAND_MAX));
+          eps1=(sqrt(-2*log(random)))*cos(2*M_PI*random);//boxmuller transformation
+          eps2=(sqrt(-2*log(random)))*sin(2*M_PI*random);
+          eps3=(eps1+eps2)/2;  
+            buff=1*(exp((-1*((pow(t-j*T+(0.5*eps1),2))))/(2*(pow(amp+0.5*eps2,2)))));
+            storage[count]=buff;
+            count++;//number of elements in the datas
+            //fprintf(fptr,"%f %f\n",t,buff);
+            
+            if(buff>=greatest){
+                greatest=buff;//finding the greatest in the dataset
+            }
+
+            if(buff<smallest){
+                smallest=buff;//finding the lowest in the dataset
+            }
+
+       }
+    }
+
+
+    }
+    else {
+        printf("Please enter 'l' for Lorentzian or 'g' for gaussian.\n");
+        return 0;
+    }
+    double realine=(greatest+smallest)/2;
+    double epsilon=0;
+    double *arr=(double*)malloc(count*sizeof(double));
+    int j=0;
+    int k=0;
+    double *arr2=(double*)malloc(count*sizeof(double));;
+     if(amp<2){
+   for(int i=0;i<count-4;i++){
+    arr2[k]=(storage[i]+storage[i+1]+storage[i+2]+storage[i+3])/4;//removing the noise
+    k++;
+   }
+  }
+  /*if(m>700){
+     for(int i=0;i<count-20;i++){
+    arr2[k]=(storage[i]+storage[i+1]+storage[i+2]+storage[i+3]+storage[i+4]+storage[i+5]+storage[i+6]+storage[i+7]+storage[i+8]+storage[i+9]+storage[i+10]+storage[i+11]+storage[i+12]+storage[i+13]+storage[i+14]+storage[i+15]+storage[i+16]+storage[i+17]+storage[i+18]+storage[i+19])/20;
+    k++;//removing the noise
+
+  }*/
+
+     else{
+        for(int i=0;i<count-20;i++){
+    arr2[k]=(storage[i]+storage[i+1]+storage[i+2]+storage[i+3]+storage[i+4]+storage[i+5]+storage[i+6]+storage[i+7]+storage[i+8]+storage[i+9]+storage[i+10]+storage[i+11]+storage[i+12]+storage[i+13]+storage[i+14]+storage[i+15]+storage[i+16]+storage[i+17]+storage[i+18]+storage[i+19])/20;
+    k++;//removing the noise
+    
+    }
+   }
+
+   double arrtime[k];
+    double time=0;
+   for(int i=0;i<k;i++){
+    arrtime[i]=time;//storing the time value corresponding to the corresponding data in the dataset
+    time=time+(increment);
+      //fprintf(fptr2,"%f %f\n",arrtime[i],arr2[i]);
+    
+   }
+   double arrans[m*2];
+    j=0;
+
+   for(int i=0;i<k-1;i++){
+    difference1=arr2[i]-realine;
+    difference2=arr2[i+1]-realine;
+    if(difference1*difference2<=0){ //finding the intersection point of the line with the curve
+      arrans[j]=arrtime[i];
+      j++;
+
+    }
+   }
+
+   double *midpoint=(double*)malloc(count*sizeof(double));
+   double *width=(double*)malloc(count*sizeof(double));
+
+   for(int i=0;i<2*m;i=i+2){
+    midpoint[i/2]=(arrans[i]+arrans[i+1])/2;
+    cx[i/2].location=midpoint[i/2]; //the location is stored into structure
+   }
+
+   j=0;
+
+   double *peaks=(double*)malloc(count*sizeof(double));
+   double *midpeaks=(double*)malloc(count*sizeof(double));
+
+   for(int i=0;i<k;i++){
+    if(fabs(arrtime[i]-midpoint[j])<=1){
+      peaks[j]=arr2[i];
+      cx[j].amplitude=peaks[j]; //the peak of the curves are stored in the structure
+      j++;
+    }
+   }
+  // printf("peaks:%d\n",j);
+
+   for(int i=0;i<m;i++){
+    if(type=='g'){
+        midpeaks[i]=peaks[i]/2; 
+
+    }
+    else{
+    midpeaks[i]=peaks[i]/2; //half the length of height of peak
+    }
+
+   }
+
+   double error1=0;
+   double error2=0;
+   double *intersection=(double*)malloc(count*sizeof(double));
+   int f=0;
+   j=0;
+
+   while(j<m){
+   for(int i=j*(count/m);i<((j+1)*(count/m))-1;i++){
+    error1=arr2[i]-midpeaks[j];
+    error2=arr2[i+1]-midpeaks[j];
+
+    if((error1*error2)<=0){ //to find the intersection point of the line with the curve
+      intersection[f]=arrtime[i];
+      //fprintf(fptr,"%f\n",intersection[f]);
+      f++;
+    }
+   }
+   j++;  
+   }
+  // printf("%d\n",f);
+
+  double widthreal[m];
+  double sumwidth=0;
+  double sumsqwidth=0;
+  int counter=0;
+  //if(m>=600){
+  if(f%2!=0){
+    f=f-m/8;
+
+  }
+  else if(f%2==0){
+   f=f-f/8;
+ }
+  ///}
+ //printf("%d\n",j);
+
+
+
+  for(int i=0;i<f;i=i+2){
+    widthreal[i/2]=(fabs(intersection[i+1]-intersection[i]))/2;
+   if(widthreal[i/2]<=9*amp){
+    cx[i/2].width=widthreal[i/2]; //width of each curve is stored in the structure
+    sumwidth=sumwidth+widthreal[i/2];
+    sumsqwidth=sumsqwidth+pow(widthreal[i/2],2);
+    counter++; //no of elements in the reduced noise curve
+    }
+  
+  }
+  if(f%2==0){
+      double avgwidth=sumwidth/(j);
+   double stdwidth=sqrt(fmax(0,(sumsqwidth/(j))-pow(avgwidth,2)));
+  }
+   double avgwidth=sumwidth/(j);
+   double stdwidth=sqrt(fmax(0,(sumsqwidth/(j))-pow(avgwidth,2)));
+   double *anstime=(double*)malloc(count*sizeof(double));;
+   double sum=0;
+   double sumsq=0;
+   double averagetime=0;
+   double standardev=0;
+
+   if(m==1){
+    anstime[0]=midpoint[0];
+    sum=anstime[0];
+    sumsq=pow(anstime[0],2);
+    averagetime=sum*2;
+    standardev=sqrt(fmax(0,(sumsq)-pow(sum,2)));
+   }
+
+   else{
+    for(int i=0;i<m-1;i++){
+    anstime[i]=(midpoint[i+1]-midpoint[i]);
+    sum=sum+anstime[i];
+    sumsq=sumsq+pow(anstime[i],2);
+   }
+   
+
+   averagetime=sum/(m-1);//average time
+   standardev= sqrt(fmax(0,(sumsq/(m-1))-pow(averagetime,2)));
+   } 
+   //standard deviation of time
+   if(type=='g'){
+   printf("%f %f %f %f",averagetime,avgwidth/(1.177),standardev,stdwidth);
+   } //1.177 is rt(ln(4))
+   else{
+    printf("%f %f %f %f",averagetime,avgwidth,standardev,stdwidth);
+    }
+   //printing the answer
+   free(anstime); //freeing data that has been dynamically alloted data
+   free(arr);
+   free(intersection);
+   free(width);
+   free(midpeaks);
+   free(midpoint);
+   free(arr2);
+   free(storage);
+    return 0;
+}
+
