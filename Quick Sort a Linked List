@@ -1,0 +1,153 @@
+/*Roll no.: EE23B049
+Name: Nishanth Senthil Kumar
+Date: 6 September 2023
+Version: 1
+Description: Linked list and sorting it with quick sort
+Input: Text file with numbers written one on each line
+Ouput: Sorted set of number in ascending order
+*/
+
+#include <stdio.h>
+#include <stdlib.h>
+
+
+struct node {
+    int data;
+    struct node *link;
+};
+
+
+void printElement(struct node *head);
+
+void quicksort(struct node **head);
+
+struct node* partition(struct node *head);
+
+
+int main(int argc, char *argv[])
+{
+    FILE *fptr;
+    fptr=fopen(argv[1], "r");
+    int buff;
+    struct node *head=malloc(sizeof(struct node));
+    head->link=NULL;
+    struct node *prv;
+
+    struct node *current;
+    current=head;
+
+    while (fscanf(fptr, "%d",&buff) == 1){
+        current->data=buff;
+        current->link=malloc(sizeof(struct node));
+        prv = current;
+        current=current->link;
+
+     }
+     free(prv->link);
+     prv->link=NULL;
+
+    
+     quicksort(&head);
+
+     printElement(head);
+
+
+    return 0;
+}
+
+
+
+void quicksort(struct node **head){
+
+
+    if ((*head)->link == NULL)
+        return;
+
+    struct node *endoffirst= partition(*head);
+    struct node *startoffirst=(*head)->link;
+    struct node *startofsecond= endoffirst->link;
+//EDGECASE 1 pivot bigger than everything
+     if(endoffirst->link==NULL){
+            quicksort(&startoffirst);
+
+            //recalculate endoffirst
+            endoffirst = startoffirst;
+            while (endoffirst->link!=NULL){
+                endoffirst=endoffirst->link;
+            }
+            endoffirst->link = *head;
+            (*head)->link = NULL;
+            
+            *head = startoffirst;
+
+        return;
+     }
+
+
+
+//EDGECASE 2 pivot smaller than everything
+     if(startoffirst==startofsecond){
+            quicksort(&startoffirst);
+
+            (*head)->link=startoffirst;
+        return;
+     }
+
+    quicksort(&startofsecond);
+    endoffirst->link = NULL;
+    quicksort(&startoffirst);
+    
+
+    //recalculate endoffirst
+    endoffirst = startoffirst;
+    while (endoffirst->link!=NULL){
+        endoffirst=endoffirst->link;
+    }
+    endoffirst->link = *head;
+    (*head)->link = startofsecond;
+
+    *head = startoffirst;
+}
+
+
+struct node* partition(struct node *head){
+
+    struct node *i=head->link;
+    struct node *j=head->link;
+    struct node *k=head;
+   
+    int pivot;
+    pivot=head->data;
+
+    while(i!=NULL){
+        if((i->data)<pivot){
+            int temp=i->data;
+            i->data=j->data;
+            j->data=temp;
+            k=j;
+            j=j->link;
+       
+        }
+
+        i = i->link;
+
+    }
+  
+return k;
+  
+}
+
+void printElement(struct node *head){
+
+    if(head==0){
+        printf("The linked list is empty");
+
+    }
+    struct node *ptr;
+    ptr=head;
+    while(ptr!=NULL){
+        printf("%d\n", ptr->data);
+        ptr=ptr->link;
+    }
+
+}
