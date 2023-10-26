@@ -1,0 +1,99 @@
+/******************************************************************************************************************************************************************
+
+Roll no.:EE23B049
+Name: Nishanth Senthil Kumar
+Date: 20 October 2023
+Version: 1
+Description: To use  Gaussian and Lagrangian interpolation to find the approximate value of a function
+Input: Polynomial order(argv[1]),Start of interval(xstart,argv[2]),End of interval(xend,argv[3]),
+Value of x for the output(argv[4],x0).
+Output: Value of f(x0).
+
+********************************************************************************************************************************************************************/
+
+
+
+
+
+#include <stdio.h>
+#include <math.h>
+#include <stdlib.h>
+
+long double function(long double x); //function to calculate the value of the function
+
+void newInt(long double *x,long double *y,int n,long double xi); //Gaussian Interpolation
+
+long double Lagrange(long double *x,long double *y,int n,long double xi); //Lagrangian Interpolation
+
+
+int main(int argc, char *argv[])
+{
+    int order=atoi(argv[1]);
+    long double xstart=atof(argv[2]);
+    long double xend=atof(argv[3]);
+    long double x=atof(argv[4]);
+    long double arr1[order+1]; //to store the value of the x coordinates
+    long double arr2[order+1];//to store the values of the y coordinates
+    long double temp=xstart; 
+    long double arr3[order+1];  //will store the value of y after approximating with lagrangian
+    for(int i=0;i<(order+1);i++){
+        arr1[i]=xstart;
+        arr2[i]=function(xstart);
+        xstart=xstart+((xend-temp)/order); //generating n points between the interval
+    }
+    for(int i=0;i<order+1;i++){
+    
+        arr3[i]=Lagrange(arr1,arr2,order+1,arr1[i]); //storing the lagrangian generated in this array
+      
+    }
+    newInt(arr1,arr3,order+1,x); //Gaussian interpolation
+ 
+    return 0;
+}
+
+long double function(long double x){
+    long double value =1/(1+(25*(pow(x,2))));
+    return value;
+}
+
+long double Lagrange(long double *x,long double *y,int n,long double xi){
+    long double sum=0; //will store the values of the individual ordered approximations
+    long double product=1; //initialised to 1
+    for(int i=0;i<n;i++){
+        for(int j=0;j<n;j++){
+            if(i!=j){
+                product=product*(xi-x[j])/(x[i]-x[j]); //performing the subtraction
+            }
+        }
+        sum=sum+(product*y[i]),product=1;
+
+    }
+
+        return sum; //this returns the value of the lagrangian approximation
+}
+
+
+void newInt(long double *x,long double *y,int n,long double xi){
+    long double fdd[n][n]; //will store the (x,y) coordinates
+    for(int i=0;i<n;i++){
+        fdd[i][0]=y[i];
+    }
+
+    for(int j=1;j<n;j++){
+        for(int i=0;i<n-j;i++){
+            fdd[i][j]=(fdd[i+1][j-1]-fdd[i][j-1])/(x[i+j]-x[i]); //perfoming the function
+
+        }
+
+    }
+    long double xterm=1;
+    long double yr;
+    yr=fdd[0][0];
+    for(int order=1;order<n;order++){
+        xterm=xterm*(xi-x[order-1]);
+        yr+=xterm*fdd[0][order];
+        }
+    printf("%Lf ",yr); //printing the final value
+
+
+}
