@@ -1,0 +1,54 @@
+/*Roll no.:EE23B049
+Name: Nishanth Senthil Kumar
+Date: 8 September 2023
+Version: 1
+Description: Fixed point iteration - to generate a logistic map and plot it on gnuplot
+Input: Maximum no of iterations, increment value, error
+Ouput: Plot of a logistic map
+*/
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+
+
+int main(int argc, char  *argv[])
+{
+
+    int iterations=atoi(argv[1]);
+    float increment=atof(argv[2]);
+    float error=atof(argv[3]);
+    FILE *fptr=fopen("hi.txt","w");
+    float x=0.4;
+    float newx=0;
+    float temp;
+    
+    for(float j=0;j<=1;j=j+increment)//as value of x is always 0 for all r from 0to 1
+    {
+        fprintf(fptr,"%f %f\n",j,0.000000);
+
+    }
+   
+    for(float r=1.00;r<=4;r=r+increment){
+         
+        if(r==1.000000){
+             fprintf(fptr,"%f %f\n",r,newx);
+        }
+
+        int count=0;
+        newx=r*x*(1-x);
+        
+    
+    while((fabs((x-newx)))>=error && count<iterations){
+        x=newx;
+        newx=r*(newx)*(1-newx);
+        count++;
+        
+        fprintf(fptr,"%f %f\n",r,newx);
+        
+     
+    }
+    }
+
+   return 0;
+}
