@@ -1,0 +1,67 @@
+//HEADER
+//NAME:NISHANTH SENTHIL KUMAR
+//ROLL NO:EE23B049
+//DATE:18-AUG-2023
+//VERSION:1
+//DESCRIPITION: TO FIND THE VALUE OF SIN(X) USING TAYLOR EXPANSION SERIES AND COMPUTE THE ERROR BY COMPARING IT WITH THE ACTUAL VALUE OF SIN(X)
+//INPUT:NUMBER OF TERMS, VALUE OF ARGUMENT FOR X
+//OUTPUT: VALUE OF SINE CALCULATED USING SERIES, ERROR
+
+#include <stdio.h>
+#include <math.h>
+#include <stdlib.h>
+
+
+int fact(int n);
+
+int main(int argc, char* argv[]){
+
+    int noofterms;//no of terms the summation will commute
+    float x;//value of argument for sine function
+    noofterms=atoi(argv[1]);
+    x=atof(argv[2]);
+
+    float mysin=0;//mysin refers to value of sine computed by using series
+    int j=1;//this variable will later be used to go through odd numbers
+
+
+    for(int i=1;i<=noofterms;i++){
+        float temp=fact(j);//as j will iterated through odd numbers, this will call up the function and find the value of factorial of that number
+        float temp2=pow(x,j);//similarly, this will be used to calculate the odd powers of argument x
+        j=j+2;//ensures it iterates through only odd values
+
+        if(i%2!=0){
+            mysin=mysin+((temp2)/temp);
+        }
+
+        if(i%2==0){
+            mysin=mysin-((temp2)/temp);
+
+        }
+
+
+    }
+
+   float actualsin=sin(x);//actual value of sine
+   float error=actualsin-mysin;//error= actual value of sine - calculated value of sin
+
+   
+   printf("%.3f,",mysin);//prints value of calculated sine
+   printf("%.3f", error);//prints value of error
+   return 0;
+
+}
+
+//function to calculate the value of factorial of a function
+int fact(int n){
+
+    int x,fact=1;
+
+    for(x=1;x<=n;x++)
+
+      fact=fact*x;
+
+     return fact;
+
+}
+
