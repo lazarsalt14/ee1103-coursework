@@ -1,0 +1,138 @@
+/*
+Roll no.:EE23B049
+Name: Nishanth Senthil Kumar
+Date: 13 October 2023
+Version: 1
+Description: Sole equations using Gaussian elimination
+Input: Name of the text file
+Ouput: Values of each variable printed on terminal seperated by spaces
+*/
+
+#include <stdio.h>
+#include <math.h>
+#include <stdlib.h>
+#include <stdbool.h>
+
+bool eliminate(float **a, float *s, int n, float *b, float tol, int *er);
+void pivot(float **a, float *b, float *s, int n, int k);
+void substitute(float **a, int n, float *b, float *x);
+
+int main(int argc, char *argv[]) {
+    char *filename = argv[1]; //function to eliminate
+    FILE *fptr = fopen(filename, "r"); //opening the file
+    int i = 0;
+    float storage[10000];
+    float buff;
+    FILE *fptr2 = fopen(filename, "r");
+    int j = 0;
+    char BUFF = fgetc(fptr2);
+    float tol = 0.001; //tolerance
+
+    while (BUFF != '\n') {
+        if (BUFF == ' ') {
+            j++;
+        }
+        BUFF = fgetc(fptr2);
+    }
+    int n = j;
+    float **a = malloc(n * sizeof(float *));
+    for (int i = 0; i < n; i++) {
+        a[i] = malloc((n + 1) * sizeof(float)); //the matrix
+    }
+
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n + 1; j++) {
+            fscanf(fptr, "%f", &a[i][j]);
+        }
+    }
+
+    float b[n];
+    for (int i = 0; i < n; i++) {
+        b[i] = a[i][n]; //array with the coefficients
+    }
+
+    float s[n];
+    int er = 0;
+    for (int i = 0; i < n; i++) {
+        s[i] = fabs(a[i][0]); //array s
+        for (int j = 0; j < n; j++) {
+            if (fabs(a[i][j]) > s[i]) {
+                s[i] = a[i][j];
+            }
+        }
+    }
+    float x[n];
+    if (!eliminate(a, s, n, b, tol, &er)) {
+        printf("Error: The matrix is singular or ill-conditioned.\n"); //checking the boundary cases
+        return 1;
+    }
+
+    substitute(a, n, b, x);
+
+    for (int i = 0; i < n; i++) {
+        printf("%f ", x[i]); //printing the value of variables
+    }
+
+    return 0;
+}
+
+bool eliminate(float **a, float *s, int n, float *b, float tol, int *er) {
+    //function used to find eliminate 
+    for (int k = 0; k < n - 1; k++) {
+        pivot(a, b, s, n, k);
+        if (fabs(a[k][k] / s[k]) < tol) {
+            *er = -1;
+            return false; //case 1
+        }
+        for (int i = k + 1; i < n; i++) {
+            float factor = a[i][k] / a[k][k];
+            for (int j = k; j < n; j++) {
+                a[i][j] -= factor * a[k][j];
+            }
+            b[i] -= factor * b[k];
+        }
+    }
+    if (fabs(a[n - 1][n - 1] / s[n - 1]) < tol) {
+        *er = -1;
+        return false; //case 2
+    }
+    return true; //case 3
+}
+
+void pivot(float **a, float *b, float *s, int n, int k) {
+    //finding the pivot
+    int p = k;
+    float big = fabs(a[k][k] / s[k]);
+    for (int i = k; i < n; i++) {
+        float dummy = fabs(a[i][k] / s[i]);
+        if (dummy > big) {
+            big = dummy;
+            p = i;
+        }
+    }
+    if (p != k) {
+        for (int j = k; j < n; j++) {
+            float dummy = a[p][j];
+            a[p][j] = a[k][j];
+            a[k][j] = dummy;
+        }
+        float dummy = b[p];
+        b[p] = b[k];
+        b[k] = dummy;
+        dummy = s[p];
+        s[p] = s[k];
+        s[k] = dummy;
+    }
+}
+
+void substitute(float **a, int n, float *b, float *x) {
+    //function used to subsitutw
+    x[n - 1] = b[n - 1] / a[n - 1][n - 1];
+    for (int i = n - 2; i >= 0; i--) {
+        float sum = 0;
+        for (int j = i + 1; j < n; j++) {
+            sum += a[i][j] * x[j];
+        }
+        x[i] = (b[i] - sum) / a[i][i]; //finding the values of all the variables
+    }
+}
