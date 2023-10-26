@@ -1,0 +1,107 @@
+/*Roll no.: EE23B049
+Name: Nishanth Senthil Kumar
+Date: 18 August 2023
+Version: 1
+Description: Program to use command line flags to get number of bits, generate random bits into randbits.txt 
+Input: Using flags -n,-s, -h,-t
+Ouput: text file with random bits and hamming distance between two bit sequences
+*/
+
+#include <ctype.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <time.h>
+#include <math.h>
+#include <string.h>
+
+
+void bitgenerator(int j);
+
+
+int main(int argc, char *argv[])
+{
+
+    int c;
+    int n;
+    int seed;
+    char fileone[100000];
+    char filetwo[100000];
+    int hammer=0;
+    int lengthone;
+    int lengthtwo;
+    char *bitsone;
+    char *bitstwo;
+    char a;
+    char b;
+	time_t t;
+
+	while((c = getopt(argc, argv, "n:s:th:")) != -1){ 
+      	switch(c){
+
+         	case 'n':
+ 			n = atoi(optarg);
+            bitgenerator(n);
+			break;  
+
+
+         	case 's':
+            seed = atoi(optarg);
+            srand((unsigned) seed);
+			break;
+
+
+         	case 't':
+         	srand((unsigned) time(&t)); 
+         	break; 
+
+            case 'h':
+            printf("\n");
+            FILE* bitsone =fopen(optarg,"r");
+			FILE* bitstwo =fopen(argv[optind],"r");
+            //loop to compare two files to calculate hamming distance
+            while(14){
+                a=fgetc(bitsone);            
+                b=fgetc(bitstwo);    
+
+                if(a==EOF || b==EOF)//to exit when end of file comes
+                {
+                    break;
+                }
+
+               if(a!=b){
+                    hammer++;
+
+                }
+
+            }
+          
+            printf("Hamming distance is %d", hammer);
+            
+        }
+        
+        }
+
+    return 0;
+}
+
+
+// function to generate psedorandom bits
+
+void bitgenerator(int j){
+
+    int bits[j];
+    for(int i=0;i<j;i++){
+        bits[i]=rand()%2;
+
+
+    }
+    FILE* f = fopen("randbits.txt", "w");
+     for(int i=0;i<j;i++){
+        fprintf(f, "%d", bits[i]);
+
+
+    }
+
+
+}
