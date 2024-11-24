@@ -1,11 +1,14 @@
-/*Roll no.: EE23B049
+/******************************************************************************************************************************************************************
+
+Roll no.: EE23B049
 Name: Nishanth Senthil Kumar
 Date: 1 September 2023
 Version: 1
 Description: To find the roots of a given polynomial equation using bisection method and false position method
 Input: 1 - for bisection, 2 - for false position
-Ouput: roots of given equation
-*/
+Ouput: Roots of given equation
+
+******************************************************************************************************************************************************************/
 
 #include <stdio.h>
 #include <string.h>
@@ -13,8 +16,8 @@ Ouput: roots of given equation
 #include <math.h>
 
 
-
-float function(float x);//function to find values of given function
+//function to find values of given function
+float function(float x);
 
 
 
@@ -29,8 +32,8 @@ int main(int argc, char *argv[])
     float e=1000;
 
 
-
-    if(strcmp(argv[1], "1")==0)//for bisection
+    //for bisection
+    if(strcmp(argv[1], "1")==0)
     {
 
      while(e>10){
